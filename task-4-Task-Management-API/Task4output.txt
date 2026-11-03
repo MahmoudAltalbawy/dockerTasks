@@ -1,0 +1,44 @@
+The output of the command:
+$ curl http://localhost:8003/tasks
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    119 100    119   0      0  18784      0                              0100    119 100    119   0      0  18593      0                              0100    119 100    119   0      0  18504      0                              0
+{"tasks":[{"completed":true,"id":1,"title":"Install Docker"},{"completed":false,"id":2,"title":"Build Docker Image"}]}
+
+--------------------------------
+
+The output of the command:
+$ curl http://localhost:8003/tasks/1
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100     51 100     51   0      0   9212      0                              0100     51 100     51   0      0   9055      0                              0100     51 100     51   0      0   8937      0                              0
+{"completed":true,"id":1,"title":"Install Docker"}
+
+--------------------------------
+
+The output of the command:
+$ curl -X POST http://localhost:8003/tasks -H Content-Type: application/json -d {"title":"Learn Docker Volumes"}
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100     90 100     58 100     32   6899   3806                              0100     90 100     58 100     32   6629   3657                              0100     90 100     58 100     32   6567   3623                              0
+{"completed":false,"id":3,"title":"Learn Docker Volumes"}
+
+--------------------------------
+
+The output of the command:
+$ curl -X DELETE http://localhost:8003/tasks/1
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0                              0
+
+--------------------------------
+
+The output of the command:
+$ curl http://localhost:8003/tasks
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    126 100    126   0      0  42070      0                              0100    126 100    126   0      0  40462      0                              0100    126 100    126   0      0  39486      0                              0
+{"tasks":[{"completed":false,"id":2,"title":"Build Docker Image"},{"completed":false,"id":3,"title":"Learn Docker Volumes"}]}
+
+--------------------------------
+
