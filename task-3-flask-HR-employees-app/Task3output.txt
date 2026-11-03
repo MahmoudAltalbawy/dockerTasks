@@ -1,0 +1,58 @@
+The output of the command:
+$ curl http://localhost:8000/
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100     38 100     38   0      0    997      0                              0100     38 100     38   0      0    996      0                              0100     38 100     38   0      0    995      0                              0
+{"message":"Employee API is running"}
+
+--------------------------------
+
+The output of the command:
+$ curl http://localhost:8000/employees
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    256 100    256   0      0  85219      0                              0100    256 100    256   0      0  81166      0                              0100    256 100    256   0      0  77977      0                              0
+{"employees":[{"department":"DevOps","id":1,"name":"Ahmed"},{"department":"Front-End","id":2,"name":"Mohamed"},{"department":"cloud","id":3,"name":"Mahmoud"},{"department":"Platform","id":4,"name":"Yara"},{"department":"Back-End","id":5,"name":"Lamiaa"}]}
+
+--------------------------------
+
+The output of the command:
+$ curl http://localhost:8000/employees/1
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100     46 100     46   0      0  10034      0                              0100     46 100     46   0      0   9801      0                              0100     46 100     46   0      0   9647      0                              0
+{"department":"DevOps","id":1,"name":"Ahmed"}
+
+--------------------------------
+
+The output of the command:
+$ curl http://localhost:8000/employees/2
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100     51 100     51   0      0  20094      0                              0100     51 100     51   0      0  19406      0                              0100     51 100     51   0      0  18874      0                              0
+{"department":"Front-End","id":2,"name":"Mohamed"}
+
+--------------------------------
+
+The output of the command:
+$ curl http://localhost:8000/employees/30
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    105 100    105   0      0  14131      0                              0100    105 100    105   0      0  13885      0                              0100    105 100    105   0      0  13714      0                              0
+<!doctype html>
+<html lang=en>
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>Employee not found</p>
+
+--------------------------------
+
+The output of the command:
+$ curl http://localhost:9000/employees/1
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100     46 100     46   0      0   2621      0                              0100     46 100     46   0      0   2608      0                              0100     46 100     46   0      0   2597      0                              0
+{"department":"DevOps","id":1,"name":"Ahmed"}
+
+--------------------------------
+
