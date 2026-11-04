@@ -1,0 +1,9 @@
+# FROM nginx:latest-alpine
+# there is no "nginx:latest-alpine" in docker hub you can see
+# with "docker manifest inspect nginx:latest-alpine"
+FROM nginx:latest
+
+COPY index.html /usr/share/nginx/html/
+
+EXPOSE 80
+

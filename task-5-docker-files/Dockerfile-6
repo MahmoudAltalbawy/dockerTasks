@@ -1,0 +1,32 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+#COPY app.py /application/
+
+#use the woking dir to copy
+
+COPY app.py /app/
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+#copy the requirements file before running pip install
+
+#COPY requirements.txt .
+
+#use a standard linux user or atleast create it before using it 
+
+RUN useradd nobody
+
+USER nobody
+
+EXPOSE 8000
+
+# this will bind only to localhost 
+
+#CMD ["gunicorn", "--bind", "127.0.0.1:8000", "app:app"]
+
+
+CMD ["gunicorn", "--bind", "0.0.0.1:8000", "app:app"]

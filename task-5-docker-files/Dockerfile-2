@@ -1,0 +1,10 @@
+FROM python:3.12-slim
+
+WORKDIR /application
+
+#COPY app.py /app/app.py
+# use your work dir as dist or simply pass "."
+
+COPY app.py /application/app.py
+
+CMD ["python", "app.py"]

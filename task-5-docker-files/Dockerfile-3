@@ -1,0 +1,17 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY app.py .
+
+RUN pip install flask
+
+
+# EXPOSE 5000
+EXPOSE 8000
+# didn't install gunicorn
+
+RUN pip install gunicorn
+# CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# we could also change the port to the default 8000 if the code uses it 
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
