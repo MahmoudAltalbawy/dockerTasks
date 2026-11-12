@@ -1,0 +1,108 @@
+
+
+services:
+  postgresdb:
+    image: postgres:17
+    container_name: wave_postgres_db
+    environment:
+      POSTGRES_USER: back-worker-user
+      POSTGRES_PASSWORD: "159159"
+      POSTGRES_DB: waveDB
+    
+    volumes:
+      - wave_postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks:
+      - backend-data
+      - worker-data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U back-worker-user -d waveDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+  
+  redisdb:
+
+    image: redis:latest
+    container_name: wave_redis_db
+
+    volumes:
+      - wave_redis_data:/data
+    networks:
+      - backend-data
+      - worker-data
+    command: redis-server --appendonly yes
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  
+  backend:
+    build: ./apps/api
+    container_name: wave_backend
+    environment:
+      DATABASE_URL: postgresql://back-worker-user:159159@postgresdb:5432/waveDB
+      REDIS_URL: redis://redisdb:6379
+    networks:
+      - backend-data
+
+    ports:
+      - 3000:3000
+
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      
+      redisdb:
+        condition: service_healthy
+
+  worker:
+    build: ./apps/worker
+    container_name: wave_worker
+    environment:
+      DATABASE_URL: postgresql://back-worker-user:159159@postgresdb:5432/waveDB
+      REDIS_URL: redis://redisdb:6379
+    networks:
+      - worker-data
+
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      
+      redisdb:
+        condition: service_healthy
+  
+  frontend:
+    build: 
+      context: ./apps/frontend
+
+      args:
+        VITE_API_URL: "${VITE_API_URL:-http://localhost:3000}"
+    
+    container_name: wave_frontend
+    ports:
+      - 80:80
+    
+
+networks:
+  backend-data:
+    driver: bridge
+  worker-data:
+    driver: bridge
+  
+
+volumes:
+  wave_redis_data:
+  wave_postgres_data:
+
+
+
+
+
+
+      
+
