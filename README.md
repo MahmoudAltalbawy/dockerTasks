@@ -1,120 +1,339 @@
-<h1 align="center">Nexus task submission </h1>   
+# Nexus Task Submission
 
+## 1. Prerequisites
 
-### 1st prerequisites
-1st we need a common network for both nexus and postgresql to talk 
-    we create it in docker using the command "docker network create nexus-network"
-    the network name is "nexus-network"
+First, we need a common Docker network that allows Nexus and PostgreSQL to communicate with each other.
 
-### 2nd database creation 
+Create the network using:
 
-1st we use postgresql 17db in this task
+```bash
+docker network create nexus-network
+```
 
-2nd we are advised to use a seperate user to nexus in the db we will call it "nexus" 
-    using the -e flag environment variables to set the  "POSTGRES_USER" variable equal to  "nexus" 
+The network name is `nexus-network`.
 
-3rd we set a password to the nexus db user
-    using the same -e flag to set the  "POSTGRES_PASSWORD" variable equal to  "a password of our choice"
+---
 
-4th we create a new db called nexus or nexus-db
-    using the same -e flag to set the  "POSTGRES_DB" variable equal to  "nexus"
+## 2. PostgreSQL Database Creation
 
-5th we need to specify the common network for both nexus and postgresql to talk 
-    using the --network flag we will set "nexus-network" to be the network postgresql use.
+### 2.1. Database Configuration
 
-6th we name our container to "nexus-postgres" 
-    using the --name flag
+1. **Choose the PostgreSQL image**
 
-7th we create a Bind Mounts to keep our data 
-    using the -v flag with the host / container paths for example:
-    "-v ~/postgre-mount:/var/lib/postgresql/data"
+   We will use PostgreSQL 17 for this task.
 
-8th we give the exact tag of our base image in our case "postgres:17"
+2. **Create a dedicated database user**
 
-#### the full comand 
-    "docker run    --name nexus-postgres   --network nexus-network   -e POSTGRES_USER=nexus   -e POSTGRES_PASSWORD=**********   -e POSTGRES_DB=nexus   -v ~/postgre-mount:/var/lib/postgresql/data   postgres:17"
+   It is recommended to use a separate user for Nexus instead of using the default PostgreSQL superuser.
 
-### 3rd prepare the db for nexus to use it 
+   We will name this user `nexus`.
 
-1st we open the db terminal using 
-    "docker exec -it nexus-postgres psql -U nexus -d nexus" command
+   Use the `-e` flag to set the `POSTGRES_USER` environment variable:
 
-2nd create a db SCHEMA for nexus 
-    using "CREATE SCHEMA nexus;"
+   ```bash
+   -e POSTGRES_USER=nexus
+   ```
 
-3rd we add a pg extentsion needed by nexus
-    using "CREATE EXTENSION pg_trgm SCHEMA nexus;"
+3. **Set the user's password**
 
-### 4th  nexus container creation 
+   Use the `POSTGRES_PASSWORD` environment variable to specify a password of your choice:
 
-1st we have to make sure nexus and the db are on the same network 
-    using the --network flag we set our network to "nexus-network"
+   ```bash
+   -e POSTGRES_PASSWORD=your_password
+   ```
 
-2nd we  use the user nexus in the db  
-    using the -e flag  to set the  "NEXUS_DATASTORE_NEXUS_USERNAM" variable equal to  "nexus" 
+4. **Create a dedicated database**
 
-3rd we use the password of the nexus db user
-    using the same -e flag to set the  "NEXUS_DATASTORE_NEXUS_PASSWORD" variable equal to  "the password we created in the db"
+   We will create a database named `nexus`.
 
-4th we give nexus the db URL 
-    using the same -e flag to set the  "NEXUS_DATASTORE_NEXUS_JDBCURL" variable equal to:
-    "jdbc:postgresql://nexus-postgres:5432/nexus?currentSchema=nexus"
+   Use the `POSTGRES_DB` environment variable:
 
-5th we name our container according to its use case "I want a general name because I don't have a specific usage"
-    using the --name flag we will name it mybe "nexus"
+   ```bash
+   -e POSTGRES_DB=nexus
+   ```
 
-6th we expose nexus port 
-    using the -p flag and expose port 8081 and map it port 8081
+5. **Connect the container to the common network**
 
-7th create a named volume for our data named "nexus_data"
-    using the -v flag  and map it to nexus_data:/nexus-data
+   Use the `--network` flag to connect PostgreSQL to `nexus-network`.
 
-8th specify the tag for the base image 
-    sonatype/nexus3:latest
+6. **Name the container**
 
-#### the full command
-"docker run    --name nexus   --network nexus-network   -p 8081:8081   -e NEXUS_DATASTORE_NEXUS_JDBCURL="jdbc:postgresql://nexus-postgres:5432/nexus?currentSchema=nexus"   -e NEXUS_DATASTORE_NEXUS_USERNAME=nexus   -e NEXUS_DATASTORE_NEXUS_PASSWORD=****************   -v nexus_data:/nexus-data   sonatype/nexus3:latest"
+   Use the `--name` flag to name the container `nexus-postgres`.
 
-### 5th inspecting errorrs and fixing 
-1st the errors and bugs I encounterd 
-    1  nexus exceeded the connection limit to the db 
-    2  if I want to push and pull images to nexus as a simple way we use port maping for every registry so I re created  the container with the second port maped 
+7. **Create a bind mount to persist database data**
 
-2nd inspection and reading logs 
-    I I run the service in the forground to see if they are healthy it worked fine for 5sec then the pg db started throughing a "sorry, too many clients already" error 
-    
+   Use the `-v` flag to map a host directory to the PostgreSQL data directory:
 
-    I STOPED NEXUS AND RESTARTED PG and searched for the default max connection for both I did find a 100 max for both 
-        used the "SHOW max_connections;" in pg 100 
+   ```bash
+   -v ~/postgre-mount:/var/lib/postgresql/data
+   ```
 
-        
+   This ensures that database data persists even if the container is removed.
 
-        and found the max connection pool for nexus with pg db on the official site 
-    
-    I changed the celling for conections in pg to 200
-        using ALTER SYSTEM SET max_connections = 200;
-        and then restarted the service 
-    
-    I inspected the database active connections 
-        using "SELECT datname, COUNT(*) FROM pg_stat_activity GROUP BY datname;"
-        I found a 103 connections to the nexus database 
+8. **Specify the image and tag**
 
-3rd tried created a registry in the UI but, I found that I have to open another port to be able to push to this registry
-    I stoped the nexus container renamed it and re created another container with the same volume and name to preserve the data and connection and maped another port 
-    using
-    "docker run  -d  --name nexus   --network nexus-network   -p 8081:8081 -p 8082:8082  -e NEXUS_DATASTORE_NEXUS_JDBCURL="jdbc:postgresql://nexus-postgres:5432/nexus?currentSchema=nexus"   -e NEXUS_DATASTORE_NEXUS_USERNAME=nexus   -e NEXUS_DATASTORE_NEXUS_PASSWORD=159369   -v nexus_data:/nexus-data   sonatype/nexus3:latest"
+   Use the PostgreSQL 17 image:
 
-4th there was a problem in the auth to push to nexus registry and I found the problem that a token auth must be active in the settings so I activated it.
+   ```bash
+   postgres:17
+   ```
 
-### 6th pushing and pulling images 
-1st to push an image you must tag it according to your registry 
-    using "docker tag" 
+### 2.2. Complete Command
 
-2nd you could push taged images 
-    using "docker push"
+```bash
+docker run \
+  --name nexus-postgres \
+  --network nexus-network \
+  -e POSTGRES_USER=nexus \
+  -e POSTGRES_PASSWORD=your_password \
+  -e POSTGRES_DB=nexus \
+  -v ~/postgre-mount:/var/lib/postgresql/data \
+  postgres:17
+```
 
-3rd you can pull images from the registry 
-    using "docker pull"
+---
 
+## 3. Preparing the Database for Nexus
 
+### 3.1. Access the PostgreSQL Terminal
 
+Open the PostgreSQL terminal inside the running container:
+
+```bash
+docker exec -it nexus-postgres psql -U nexus -d nexus
+```
+
+### 3.2. Create a Dedicated Schema
+
+Create a schema named `nexus`:
+
+```sql
+CREATE SCHEMA nexus;
+```
+
+### 3.3. Install the Required PostgreSQL Extension
+
+Nexus requires the `pg_trgm` extension.
+
+Install it in the `nexus` schema:
+
+```sql
+CREATE EXTENSION pg_trgm SCHEMA nexus;
+```
+
+---
+
+## 4. Nexus Container Creation
+
+### 4.1. Container Configuration
+
+1. **Connect Nexus to the common network**
+
+   Use the `--network` flag to connect Nexus to `nexus-network`, allowing it to communicate with PostgreSQL.
+
+2. **Specify the database username**
+
+   Use the `NEXUS_DATASTORE_NEXUS_USERNAME` environment variable:
+
+   ```bash
+   -e NEXUS_DATASTORE_NEXUS_USERNAME=nexus
+   ```
+
+3. **Specify the database password**
+
+   Use the `NEXUS_DATASTORE_NEXUS_PASSWORD` environment variable:
+
+   ```bash
+   -e NEXUS_DATASTORE_NEXUS_PASSWORD=your_password
+   ```
+
+4. **Specify the database JDBC URL**
+
+   Use the `NEXUS_DATASTORE_NEXUS_JDBCURL` environment variable:
+
+   ```bash
+   -e NEXUS_DATASTORE_NEXUS_JDBCURL="jdbc:postgresql://nexus-postgres:5432/nexus?currentSchema=nexus"
+   ```
+
+   Notice that we use the PostgreSQL container name (`nexus-postgres`) instead of `localhost`. Docker's internal DNS allows containers on the same network to communicate using their container names.
+
+5. **Name the Nexus container**
+
+   Use the `--name` flag.
+
+   We will use the general name `nexus`, since we are not assigning the container to a specific repository use case.
+
+6. **Expose the Nexus web interface**
+
+   Use the `-p` flag to map port `8081` on the host to port `8081` inside the container:
+
+   ```bash
+   -p 8081:8081
+   ```
+
+7. **Create a named volume for persistent data**
+
+   Use the `-v` flag to create and mount a named volume:
+
+   ```bash
+   -v nexus_data:/nexus-data
+   ```
+
+   This allows Nexus data to persist even if the container is removed or recreated.
+
+8. **Specify the image and tag**
+
+   We will use:
+
+   ```bash
+   sonatype/nexus3:latest
+   ```
+
+### 4.2. Complete Command
+
+```bash
+docker run \
+  --name nexus \
+  --network nexus-network \
+  -p 8081:8081 \
+  -e NEXUS_DATASTORE_NEXUS_JDBCURL="jdbc:postgresql://nexus-postgres:5432/nexus?currentSchema=nexus" \
+  -e NEXUS_DATASTORE_NEXUS_USERNAME=nexus \
+  -e NEXUS_DATASTORE_NEXUS_PASSWORD=your_password \
+  -v nexus_data:/nexus-data \
+  sonatype/nexus3:latest
+```
+
+---
+
+## 5. Troubleshooting and Fixing Errors
+
+### 5.1. Problems Encountered
+
+During the setup, I encountered the following issues:
+
+1. **PostgreSQL connection limit exceeded**
+
+   Nexus exceeded the maximum number of allowed connections to the PostgreSQL database.
+
+2. **Docker Registry port mapping**
+
+   To push and pull Docker images through Nexus, we need to expose an additional port for the Docker registry.
+
+### 5.2. Inspecting Logs and Database Connections
+
+I initially ran the services in the foreground to monitor their startup and inspect potential errors.
+
+Nexus worked normally for approximately five seconds, after which PostgreSQL started reporting:
+
+```text
+sorry, too many clients already
+```
+
+I stopped Nexus, restarted PostgreSQL, and investigated the default connection limits.
+
+First, I checked PostgreSQL's maximum connection limit:
+
+```sql
+SHOW max_connections;
+```
+
+The default value was `100`.
+
+I also investigated Nexus's database connection pool configuration and its documented PostgreSQL connection requirements.
+
+### 5.3. Increasing PostgreSQL's Connection Limit
+
+I increased PostgreSQL's maximum number of connections to `200`:
+
+```sql
+ALTER SYSTEM SET max_connections = 200;
+```
+
+Then I restarted the PostgreSQL service/container for the new configuration to take effect.
+
+### 5.4. Inspecting Active Database Connections
+
+To inspect the number of active connections per database, I executed:
+
+```sql
+SELECT datname, COUNT(*)
+FROM pg_stat_activity
+GROUP BY datname;
+```
+
+The result showed approximately `103` connections to the Nexus database.
+
+### 5.5. Exposing an Additional Port for Docker Registry
+
+I attempted to create a Docker hosted repository through the Nexus UI.
+
+However, I discovered that an additional port must be exposed to allow Docker clients to push and pull images through the registry.
+
+I stopped the Nexus container, renamed the old container, and recreated a new one using the same named volume.
+
+This preserved the existing Nexus data and configuration.
+
+The new container command was:
+
+```bash
+docker run -d \
+  --name nexus \
+  --network nexus-network \
+  -p 8081:8081 \
+  -p 8082:8082 \
+  -e NEXUS_DATASTORE_NEXUS_JDBCURL="jdbc:postgresql://nexus-postgres:5432/nexus?currentSchema=nexus" \
+  -e NEXUS_DATASTORE_NEXUS_USERNAME=nexus \
+  -e NEXUS_DATASTORE_NEXUS_PASSWORD=your_password \
+  -v nexus_data:/nexus-data \
+  sonatype/nexus3:latest
+```
+
+Now:
+- Port `8081` is used for the Nexus web interface.
+- Port `8082` is used for Docker registry access.
+
+### 5.6. Fixing Docker Registry Authentication
+
+Initially, I encountered an authentication problem when trying to push Docker images to the Nexus registry.
+
+After investigating the issue, I found that token-based authentication needed to be enabled in the Nexus security settings.
+
+I enabled the required authentication setting, which resolved the issue.
+
+---
+
+## 6. Pushing and Pulling Docker Images
+
+### 6.1. Tagging an Image
+
+Before pushing an image, we must tag it according to the Nexus Docker registry address.
+
+Use:
+
+```bash
+docker tag
+```
+
+For example:
+
+```bash
+docker tag alpine:latest localhost:8082/alpine:latest
+```
+
+### 6.2. Pushing an Image
+
+After tagging the image, push it to the Nexus registry:
+
+```bash
+docker push localhost:8082/alpine:latest
+```
+
+### 6.3. Pulling an Image
+
+To pull an image from the Nexus registry:
+
+```bash
+docker pull localhost:8082/alpine:latest
+```
+
+This completes the Nexus setup and demonstrates how to use it as a private Docker registry.
