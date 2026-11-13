@@ -6,7 +6,7 @@ pipeline {
     APP_DIR    = "apps/frontend"
     IMAGE_NAME = "myuser/${SERVICE}"
     IMAGE_TAG  = "${env.BUILD_NUMBER}"
-    CREDS_ID   = 'dockerhub-creds'
+    CREDS_ID   = 'docker-cred'
   }
 
   stages {
