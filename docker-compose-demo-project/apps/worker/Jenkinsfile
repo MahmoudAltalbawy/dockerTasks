@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     SERVICE    = 'wave-worker'
-    APP_DIR    = "apps/worker"
+    APP_DIR    = "docker-compose-demo-project/apps/worker"
     IMAGE_NAME = "myuser/${SERVICE}"
     IMAGE_TAG  = "${env.BUILD_NUMBER}"
     CREDS_ID   = 'docker-cred'
@@ -19,7 +19,7 @@ pipeline {
     stage('Build image') {
       when {
         anyOf {
-          changeset "apps/worker/**"
+          changeset "docker-compose-demo-project/apps/worker/**"
           triggeredBy 'UserIdCause'
         }
       }
@@ -33,7 +33,7 @@ pipeline {
     stage('Push image') {
       when {
         anyOf {
-          changeset "apps/worker/**"
+          changeset "docker-compose-demo-project/apps/worker/**"
           triggeredBy 'UserIdCause'
         }
       }
