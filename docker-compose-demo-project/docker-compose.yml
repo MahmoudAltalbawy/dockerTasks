@@ -78,7 +78,7 @@ services:
   
   frontend:
     
-    image: mahmoudaltalbawy/wave-frontend:9
+    image: mahmoudaltalbawy/wave-frontend:11
     container_name: wave_frontend
     ports:
       - 80:80
