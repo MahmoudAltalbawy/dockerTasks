@@ -61,7 +61,7 @@ services:
         condition: service_healthy
 
   worker:
-    image: mahmoudaltalbawy/wave-worker:1
+    image: mahmoudaltalbawy/wave-worker:3
     container_name: wave_worker
     environment:
       DATABASE_URL: postgresql://back-worker-user:159159@postgresdb:5432/waveDB
