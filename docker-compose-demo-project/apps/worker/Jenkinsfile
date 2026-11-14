@@ -28,9 +28,8 @@ pipeline {
         '''
       }
     }
-  }
 
-  stage('Trigger compose update') {
+    stage('Trigger compose update') {
   steps {
     build job: 'wave-update-compose-pipeline',
           parameters: [
@@ -40,6 +39,9 @@ pipeline {
           wait: true
   }
 }
+  }
+
+  
 
   post {
     always {
