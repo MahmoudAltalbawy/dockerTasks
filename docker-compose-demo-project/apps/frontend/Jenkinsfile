@@ -15,10 +15,10 @@ pipeline {
     }
 
     stage('Build image') {
-      steps {
-        sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG $APP_DIR'
-      }
-    }
+  steps {
+    sh 'docker build --build-arg VITE_API_URL=$VITE_API_URL -t $IMAGE_NAME:$IMAGE_TAG $APP_DIR'
+  }
+}
 
     stage('Push image') {
       steps {
@@ -29,6 +29,17 @@ pipeline {
       }
     }
   }
+
+  stage('Trigger compose update') {
+  steps {
+    build job: 'wave-update-compose-pipeline',
+          parameters: [
+            string(name: 'SERVICE',   value: env.SERVICE),
+            string(name: 'IMAGE_TAG', value: env.IMAGE_TAG)
+          ],
+          wait: true
+  }
+}
 
   post {
     always {

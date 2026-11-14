@@ -30,6 +30,17 @@ pipeline {
     }
   }
 
+  stage('Trigger compose update') {
+  steps {
+    build job: 'wave-update-compose-pipeline',
+          parameters: [
+            string(name: 'SERVICE',   value: env.SERVICE),
+            string(name: 'IMAGE_TAG', value: env.IMAGE_TAG)
+          ],
+          wait: true
+  }
+}
+
   post {
     always {
       sh 'docker logout || true'

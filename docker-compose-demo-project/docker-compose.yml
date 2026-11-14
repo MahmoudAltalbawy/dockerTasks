@@ -42,7 +42,7 @@ services:
       start_period: 10s
   
   backend:
-    build: ./apps/api
+    image: mahmoudaltalbawy/wave-backend:4
     container_name: wave_backend
     environment:
       DATABASE_URL: postgresql://back-worker-user:159159@postgresdb:5432/waveDB
@@ -61,7 +61,7 @@ services:
         condition: service_healthy
 
   worker:
-    build: ./apps/worker
+    image: mahmoudaltalbawy/wave-worker:4
     container_name: wave_worker
     environment:
       DATABASE_URL: postgresql://back-worker-user:159159@postgresdb:5432/waveDB
@@ -77,12 +77,8 @@ services:
         condition: service_healthy
   
   frontend:
-    build: 
-      context: ./apps/frontend
-
-      args:
-        VITE_API_URL: "${VITE_API_URL:-http://localhost:3000}"
     
+    image: mahmoudaltalbawy/wave-frontend:4
     container_name: wave_frontend
     ports:
       - 80:80
