@@ -42,7 +42,7 @@ services:
       start_period: 10s
   
   backend:
-    image: mahmoudaltalbawy/wave-backend:4
+    image: mahmoudaltalbawy/wave-backend:1
     container_name: wave_backend
     environment:
       DATABASE_URL: postgresql://back-worker-user:159159@postgresdb:5432/waveDB
